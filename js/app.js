@@ -207,7 +207,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1",function(enviado){
                 $scope.Proceso.CantidadEnviada=enviado[0].cantidad;
                 $scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
-                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc LIMIT 25",function(elem){
+                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc LIMIT 15",function(elem){
                     $scope.procesoEnvio=true;
                     if ($scope.status.connextionstate==false) {
                         $scope.rotacionOff();
@@ -280,7 +280,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                             $scope.errorAlerta.bandera=1;
                             break;
                         }
-                        debugger
                         $http({
                           method: 'GET',
                           async: true,
