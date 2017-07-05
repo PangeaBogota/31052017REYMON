@@ -48,7 +48,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
         $scope.nombreUsuario=$scope.nombreUsuario[$scope.nombreUsuario.length-1]
         $scope.nombreUsuario=ucWords($scope.nombreUsuario);
     }
-    
     $scope.pedidos=[];
     $scope.actividades=[];
     $scope.status=[];
@@ -58,84 +57,65 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
     $scope.errorAlerta.bandera=0;
     $scope.detalle_pedidos_detalle=[];
     function ucWords(string){
-     var arrayWords;
-     var returnString = "";
-     var len;
-     arrayWords = string.split(" ");
-     len = arrayWords.length;
-     for(i=0;i < len ;i++){
-      if(i != (len-1)){
-       returnString = returnString+ucFirst(arrayWords[i])+" ";
-      }
-      else{
-       returnString = returnString+ucFirst(arrayWords[i]);
-      }
-     }
-     return returnString;
+        var arrayWords;
+        var returnString = "";
+        var len;
+        arrayWords = string.split(" ");
+        len = arrayWords.length;
+        for(i=0;i < len ;i++){
+            if(i != (len-1)){
+               returnString = returnString+ucFirst(arrayWords[i])+" ";
+            }
+            else{
+               returnString = returnString+ucFirst(arrayWords[i]);
+            }
+        }
+        return returnString;
     }
     function ucFirst(string){
-     return string.substr(0,1).toUpperCase()+string.substr(1,string.length).toLowerCase();
+        return string.substr(0,1).toUpperCase()+string.substr(1,string.length).toLowerCase();
     }
-
-
-
-
-    
-
     $scope.executeSync=function()
     {
         $scope.envioDataWeb();
     }
-    $scope.$watch('online', function(newStatus) 
-        //$scope.status.connextionstate==false
-        {$scope.status.connextionstate=newStatus;  
-            if ($scope.status.connextionstate==false) {
+    $scope.$watch('online', function(newStatus) {
+        $scope.status.connextionstate=newStatus;  
+        if ($scope.status.connextionstate==false) {
             $scope.alerta.message='Verifique su conexion a Internet ';
             $scope.alerta.disableBtnAceptar=false;
             $scope.alerta.header='Conexion Internet'
         }
         else
         {
-           // $scope.envioDataWeb();
             $scope.alerta.header='Confirmar Sincronizacion'
             $scope.alerta.disableBtnAceptar=true;
             $scope.alerta.message='Esta seguro de realizar la Sincronizacion asumiendo el posible  consumo de datos elevado?';
         }
-        });
+    });
     $scope.confirmarSincronizacion=function(){
         if ($scope.procesoEnvio) {
             Mensajes('Sincronizacion en Progreso, Por Favor Esperar','warning','');
             return
         }
         $('#openConfirmacion').click();
-        
     }
     $scope.cerrarsesion=function(){
-        
         $('#openModalLogOut').click();
-        
     }
     $scope.confimarCerrarSion=function()
     {
         location.href="login.html"        
     }
     var $elie = $("#sync"), degree = 0, timer;
-    function rotate() {
-        
-        //$elie.css({ WebkitTransform: 'rotate(' + degree + 'deg)'});  
-        //$elie.css({ '-moz-transform': 'rotate(' + degree + 'deg)'});     
-        $('#subirID i').css('color','#2fc296')                 
-        //timer = setTimeout(function() {
-        //    ++degree; rotate();
-        //},5);
+    function rotate() {    
+        $('#subirID i').css('color','#2fc296');
     }
     $scope.rotacionOn=function(){
        rotate();       
     }
     $scope.rotacionOff=function(){
-        $('#subirID i').css('color','#3e5c7d')                 
-        //clearTimeout(timer);                   
-        
+        $('#subirID i').css('color','#3e5c7d');
     }
     $scope.procesoEnvio=false;
     $scope.Proceso=[];
@@ -143,7 +123,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
     $scope.Proceso.CantidadFaltante=0;
     $scope.Proceso.CantidadEnviada=0;
     $scope.Proceso.Total=0;
-    //$('#myProgress').hide();
     $('#progreso').hide();
     $scope.roundProgressData = {
       label: 0,
@@ -155,10 +134,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
         {
             $('#progreso').show();
             $scope.Proceso.Porcentaje= Math.round(($scope.Proceso.CantidadEnviada*100)/$scope.Proceso.Total);
-            //$scope.roundProgressData.percentage =Math.round(($scope.Proceso.CantidadEnviada*100)/$scope.Proceso.Total);
-            //var elem = document.getElementById("myBar"); 
-            //elem.style.width = $scope.Proceso.Porcentaje + '%'; 
-            //$scope.Proceso.Porcentaje+=" %";
             $scope.roundProgressData.label =Math.round(($scope.Proceso.CantidadEnviada*100)/$scope.Proceso.Total);
             if (isNaN($scope.roundProgressData.label)) 
             {
@@ -167,12 +142,8 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             if(!$scope.$$phase) {
                 $scope.$apply();
             }
-            
         }
     }
-    
-
-        // Here I synchronize the value of label and percentage in order to have a nice demo
     $scope.$watch('roundProgressData', function (newValue, oldValue) {
         newValue.percentage = newValue.label/100;
     }, true);
@@ -183,12 +154,116 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             $scope.sincronizacion='AUTOMATICA';
         }
         if ($scope.sincronizacion=='AUTOMATICA') {
-            $scope.envioDataWeb('AUTOMATICA');    
-            //$scope.envioDataWeb();
+            //$scope.envioDataWeb('AUTOMATICA');    
+            $scope.EnvioAutomatico();
         }
-    }, 15000);
-    $scope.envioDataWeb=function(tipo){
+    }, 5000);
+    $scope.RegistroEnviar=[];
+    $scope.SincronizacionProceso=false;
+    $scope.EnvioAutomatico=function()
+    {
+        $scope.usuario=$scope.sessiondate.nombre_usuario;
+        $scope.codigoempresa=$scope.sessiondate.codigo_empresa;
+        if ($scope.SincronizacionProceso==true) 
+            return;
+        CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0",function(faltante){
+            if (faltante.length==0) 
+            {
+                $scope.Proceso.CantidadFaltante=0;
+            }
+            else
+            {
+                $scope.Proceso.CantidadFaltante=faltante[0].cantidad;                  
+            }
+            CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1",function(enviado){
+                $scope.Proceso.CantidadEnviada=enviado[0].cantidad;
+                $scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
+                CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc",function(elem){
+                    if (elem.length==0) {
+                        $scope.SincronizacionProceso=false;
+                        CRUD.Updatedynamic("update t_pedidos set sincronizado='true' where sincronizado='plano'");
+                        CRUD.Updatedynamic("delete from s_planos_pedidos where  estado=1 ");
+                        $scope.Proceso=[];
+                        $scope.Proceso.Porcentaje=0;
+                        $scope.Proceso.CantidadFaltante=0;
+                        $scope.Proceso.CantidadEnviada=0;
+                        $scope.Proceso.Total=0;
+                        $('#progreso').hide();
+                        $scope.roundProgressData = {
+                          label: 0,
+                          percentage: 0
+                        }
+                        var URLactual = window.location;
+                        var nueva_sinc=window.localStorage.getItem("NUEVA_SINCRONIZACION");
+
+                        if (nueva_sinc==1) 
+                        {
+                            if (URLactual.hash.includes('ingresados')) {
+                                localStorage.removeItem('NUEVA_SINCRONIZACION');
+                                localStorage.setItem('NUEVA_SINCRONIZACION',0);
+                                setTimeout(function(){
+                                    $route.reload();
+                                },1000)
+                            }    
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        localStorage.removeItem('NUEVA_SINCRONIZACION');
+                        localStorage.setItem('NUEVA_SINCRONIZACION',1);
+                    }
+                    $scope.RegistroEnviar=elem;
+                    $scope.rotacionOff();
+                    $scope.rotacionOn();
+                    $scope.EnvioRegistroWeb(0);
+                })
+            })
+        })
+    }
+    $scope.EnvioRegistroWeb=function(contador)
+    {
+        var datos=JSON.stringify($scope.RegistroEnviar[contador]);
+        if (datos!=undefined) 
+        {
+            $http({
+                method: 'GET',
+                async: true,
+                url: SERVIDOR_ENVIO_PEDIDOS,
+                params:{
+                    usuario:$scope.usuario,
+                    entidad:'PLANO',
+                    codigo_empresa:$scope.codigoempresa,
+                    datos:datos
+                }}).then(
+                function success(data) {
+                    CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid="+data.data.rowid+"");
+                    $scope.Proceso.CantidadEnviada+=1;
+                    $scope.CalculoPorcentaje();
+                    debugger
+                    if ((contador+1)==$scope.RegistroEnviar.length) {
+                        $scope.SincronizacionProceso=false;
+                        //Mensajes('Sincronizacion Terminada con Exito','success','')
+                    }
+                    else
+                    {
+                        contador++;
+                        $scope.EnvioRegistroWeb(contador)
+                    }
+                }, 
+                function error(err) {
+                    Mensajes('Por favor revisar conexion','error','');
+                    $scope.SincronizacionProceso=false;
+            });
+        }
+        else
+        {
+            Mensajes('Por favor revisar conexion','error','');
+            $scope.SincronizacionProceso=false;
+        }
         
+    }
+    $scope.envioDataWeb=function(tipo){
         $scope.usuario=$scope.sessiondate.nombre_usuario;
         $scope.codigoempresa=$scope.sessiondate.codigo_empresa;
         if ($scope.procesoEnvio) {
@@ -197,7 +272,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             }
             return
         }
-        
         CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0",function(faltante){
             if (faltante.length==0) 
             {
@@ -268,7 +342,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                                 setTimeout(function(){
                                     $route.reload();
                                 },1000)
-                                
                             }
                         }
                         return;
@@ -283,16 +356,14 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         $http({
                           method: 'GET',
                           async: true,
-                          timeout:13000,
+                          timeout:14000,
                           url: SERVIDOR_ENVIO_PEDIDOS,//+'usuario='+$scope.usuario+'&entidad=PLANO&codigo_empresa=' + $scope.codigoempresa + '&datos=' + JSON.stringify(elem[i]),
                           params:{
                             usuario:$scope.usuario,
                             entidad:'PLANO',
                             codigo_empresa:$scope.codigoempresa,
                             datos:JSON.stringify(elem[i])
-
                           }
-                          
                             }).then(
                             function success(data) { 
                                 CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid="+data.data.rowid+"");
@@ -313,20 +384,9 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                     },15000)
                 })    
             })   
-        })
-        
+        });
     }
-    $scope.consoleLog=function()
-    {
-        var currentdate = new Date(); 
-        var datetime = "Last Sync: " + currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/" 
-                + currentdate.getFullYear() + " @ "  
-                + currentdate.getHours() + ":"  
-                + currentdate.getMinutes() + ":" 
-                + currentdate.getSeconds();
-        console.log(datetime);
-    }
+
     $scope.EnvioRegistro=[];
     $scope.ContadorEnvios=0;
     
@@ -493,12 +553,10 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                     function success(data) { 
                     }, 
                     function error(err) {
-
                     }) 
             }
         });
     }
-
     $scope.sincronizar=function(){
         $scope.errorAlerta.bandera=0;
         ProcesadoShow();   
@@ -1359,10 +1417,12 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                 localStorage.removeItem('GRAFICA_DIA_CANTIDAD');
                 localStorage.setItem('GRAFICA_DIA_CANTIDAD',JSON.stringify(GRAFICA_DIA_CANTIDAD)); 
                 localStorage.removeItem('FECHA_SINCRONIZACION');
+                localStorage.removeItem('FECHA_SINCRONIZACION_DATE');
                 var f = new Date();
                 $scope.sessiondate=JSON.parse(window.localStorage.getItem("CUR_USER"));
                 var FechaSincronizacion=f.getHours() + ':'+f.getMinutes() +' '+diasSemana[f.getDay()] + ", " + f.getDate() + " de " + meses[f.getMonth()] + " de " + f.getFullYear();
                 localStorage.setItem('FECHA_SINCRONIZACION',JSON.stringify(FechaSincronizacion)); 
+                localStorage.setItem('FECHA_SINCRONIZACION_DATE',f); 
                 ULTIMA_EMPRESA_SINCRONIZADA=$scope.sessiondate.codigo_empresa;
             window.setTimeout(function(){
                 ProcesadoHiden();

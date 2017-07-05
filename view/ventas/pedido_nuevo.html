@@ -106,7 +106,6 @@
                                 </div>
                             </div>
                             <div class="form-actions ">
-                            
                                 <button type="button" class="btn btn-success pull-right" ng-show="Pedido.rowid==0"  ng-click="GuardarEncabezado()">Guardar y Continuar</button>
                                 <button type="button" class="btn btn-success pull-right" ng-show="Pedido.rowid>0"  ng-click="ValidacionEncabezado(2)">Continuar</button>
                             </div>
@@ -383,7 +382,7 @@
                                 </div>
                             </div>
                             <div class="form-actions">
-                                <button class="btn btn-success pull-right" id="btnGuardar" ng-click="FinalizarPedido()">Finalizar <i class="icon-angle-right"></i></button>
+                                <button class="btn btn-success pull-right" id="btnGuardar" ng-click="FinalizarPedido()">Guardar<i class="icon-angle-right"></i></button>
                                 <button class="btn btn-primary pull-right" ng-click="CambiarTab(2);">Atras</button>
                             </div>
                         </form>
@@ -746,7 +745,7 @@
                                             <td ng-repeat="color in item.colores track by $index"  ng-show="{{color.cantidad>0}}">{{color.rowid_erp}} </td>
                                         </tr>
                                         <tr>
-                                            <td ng-repeat="color in item.colores track by $index"  ng-show="{{color.cantidad>0}}">{{color.cantidad}} </td>
+                                            <td ng-repeat="color in item.colores track by $indefx"  ng-show="{{color.cantidad>0}}">{{color.cantidad}} </td>
                                         </tr>
                                     </table>
                                     </div>

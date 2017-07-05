@@ -2029,7 +2029,11 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	}
 	setTimeout(function() {
 		if (MODAL_SINCRONIZACION==0) {
-			$('#AlertaSin').click();	
+			var FechaActual=new Date();
+			if (FechaActual.getDay()!=$scope.fechaSincronizacionDate.getDay()) 
+			{
+				$('#AlertaSin').click();	
+			}
 		}
 		else
 		{
@@ -2052,7 +2056,7 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
 	var meses = new Array ("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre");
     var diasSemana = new Array("Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado");		
 	$scope.fechaSincronizacion=window.localStorage.getItem("FECHA_SINCRONIZACION");
-
+	$scope.fechaSincronizacionDate=new Date(window.localStorage.getItem("FECHA_SINCRONIZACION_DATE"));
 	$scope.sincronizar=function(){
 		
 		$scope.errorAlerta=[];
@@ -2914,10 +2918,12 @@ app_angular.controller("pedidoController",['Conexion','$scope','$location','$htt
                 localStorage.removeItem('GRAFICA_DIA_CANTIDAD');
                 localStorage.setItem('GRAFICA_DIA_CANTIDAD',JSON.stringify(GRAFICA_DIA_CANTIDAD)); 
                 localStorage.removeItem('FECHA_SINCRONIZACION');
+                localStorage.removeItem('FECHA_SINCRONIZACION_DATE');
                 var f = new Date();
                 $scope.sessiondate=JSON.parse(window.localStorage.getItem("CUR_USER"));
                 var FechaSincronizacion=f.getHours() + ':'+f.getMinutes() +' '+diasSemana[f.getDay()] + ", " + f.getDate() + " de " + meses[f.getMonth()] + " de " + f.getFullYear();
                 localStorage.setItem('FECHA_SINCRONIZACION',JSON.stringify(FechaSincronizacion)); 
+                localStorage.setItem('FECHA_SINCRONIZACION_DATE',f); 
                 ULTIMA_EMPRESA_SINCRONIZADA=$scope.sessiondate.codigo_empresa;
             window.setTimeout(function(){
                 ProcesadoHiden();

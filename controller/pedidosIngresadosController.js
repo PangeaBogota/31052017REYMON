@@ -467,8 +467,9 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 				if (stringSentencia!='') {
 					CRUD.Updatedynamic(stringSentencia)
 					NewQuery=true;
-					CRUD.Updatedynamic("update t_pedidos set estado_sincronizacion=1,sincronizado='plano' where rowid="+rowidPedido+"");
+					
 				}
+				CRUD.Updatedynamic("update t_pedidos set estado_sincronizacion=1,sincronizado='plano' where rowid="+rowidPedido+"");
 				window.setTimeout(function(){
 					ProcesadoHiden();
 					//$route.reload();
