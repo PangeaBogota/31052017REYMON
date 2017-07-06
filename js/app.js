@@ -240,7 +240,6 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                     CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid="+data.data.rowid+"");
                     $scope.Proceso.CantidadEnviada+=1;
                     $scope.CalculoPorcentaje();
-                    debugger
                     if ((contador+1)==$scope.RegistroEnviar.length) {
                         $scope.SincronizacionProceso=false;
                         //Mensajes('Sincronizacion Terminada con Exito','success','')
@@ -254,12 +253,14 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                 function error(err) {
                     Mensajes('Por favor revisar conexion','error','');
                     $scope.SincronizacionProceso=false;
+                    $scope.CalculoPorcentaje();
             });
         }
         else
         {
-            Mensajes('Por favor revisar conexion','error','');
+            //Mensajes('Por favor revisar conexion','error','');
             $scope.SincronizacionProceso=false;
+            $scope.CalculoPorcentaje();
         }
         
     }

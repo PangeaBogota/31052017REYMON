@@ -1,4 +1,4 @@
-app_angular.controller("PedidosController",['Conexion','$scope','$route',function (Conexion,$scope,$route) {
+app_angular.controller("PedidosController",['Conexion','$scope','$route','$interval',function (Conexion,$scope,$route,$interval) {
 	$scope.sessiondate=JSON.parse(window.localStorage.getItem("CUR_USER"));
 	if ($scope.sessiondate.codigo_empresa==12) 
 	{
@@ -123,8 +123,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 		
 	    if (month.length < 2) month = '0' + month;
 	    if (day.length < 2) day = '0' + day;
-	    var dia2=[year, month, day].join('');;
-		debugger
+	    var dia2=[year, month, day].join('');
 		if (dia2>dia1) {
 			Mensajes('Dias minimos de entrega son 3 Dias','error','');
 			$scope.FechaEntrega='';
@@ -155,10 +154,148 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 		$('#modalClose').click();
 		$('#confirmacionFechaentrega').click();
 	}
+	$scope.TestInternet=function()
+	{
+		$scope.OcultarBtnTest=true;
+		$scope.ResultadoTest=[];
+		$scope.ResultadoTest.Mensaje="Procesando...";
+		var fecha_inicio=new Date();
+		fecha_inicio=fecha_inicio.getTime(); 
+		$.ajax({
+			url:"http://reymonpruebas.pedidosonline.co/mobile/VerificacionConexion",
+			timeout:15000,
+			success:function()
+			{
+				$scope.MostrarProceso=true;
+				var Fecha_Fin=new Date();
+				Fecha_Fin=Fecha_Fin.getTime(); 
+				var tiempo=Fecha_Fin-fecha_inicio; 
+				if (tiempo<4000) {
+					$scope.ResultadoTest.Mensaje="Su conexion es Alta";
+				}
+				else if (tiempo>=4000 && tiempo <=8000) 
+				{
+					$scope.ResultadoTest.Mensaje="Su conexion es Media";
+				}
+				else
+				{
+					$scope.ResultadoTest.Mensaje="Su conexion es Baja, la sincronizacion puede tardar. Se recomienda conectarse a una red mas estable";		
+				}
+				$scope.OcultarBtnTest=false;
+			},
+			error:function()
+			{
+				$scope.MostrarProceso=true;
+				$scope.ResultadoTest.Mensaje="No fue posible realizar el test, por favor revise su conexion a internet."
+				$scope.OcultarBtnTest=false;
+			}
+		})
+	}
+	$scope.$watch('online', function(newStatus) {
+		$scope.TestInternet();
+    });
+    $scope.roundProgressData = {
+      label: 0,
+      percentage: 0
+    }
+    $scope.$watch('roundProgressData', function (newValue, oldValue) {
+        newValue.percentage = newValue.label/100;
+    }, true);
+    $scope.Proceso=[];
+    $scope.Proceso.Porcentaje=0;
+    $scope.Proceso.CantidadFaltante=0;
+    $scope.Proceso.CantidadEnviada=0;
+    $scope.Proceso.Total=0;
+    $scope.CalculoPorcentaje=function()
+    {
+        if ($scope.Proceso.Total>0) 
+        {
+            $scope.Proceso.Porcentaje= Math.round(($scope.Proceso.CantidadEnviada*100)/$scope.Proceso.Total);
+            $scope.roundProgressData.label =Math.round(($scope.Proceso.CantidadEnviada*100)/$scope.Proceso.Total);
+            if (isNaN($scope.roundProgressData.label)) 
+            {
+                $scope.roundProgressData.label=0;
+            }
+            if(!$scope.$$phase) {
+                $scope.$apply();
+            }
+        }
+    }
+    $scope.modalPedidoOpen=false;
+    $scope.modalColorOpen=false;
+    $scope.$on('$routeChangeStart', function(event,next, current) { 
+    	if ($scope.modalColorOpen==true)
+    	{
+    		$('#CerrarModalColores').click();
+    		$scope.modalColorOpen=false;
+    		event.preventDefault();
+    		return;	
+    	}
+    	if ($scope.modalPedidoOpen==true) 
+    	{
+    		$('#CerrarModalPedidos').click();
+    		$scope.modalPedidoOpen=false;
+    		$scope.FinalizarIntervalo();
+    		event.preventDefault();
+    		return;	
+    	}
+		
+
+	});
+    $scope.ActualizarProceso=function()
+    {
+    	CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0 and e_rowid='"+$scope.pedidoSeleccionado.rowidpedido+"'",function(faltante){
+	        if (faltante.length==0) 
+	        {
+	            $scope.Proceso.CantidadFaltante=0;
+	        }
+	        else
+	        {
+	            $scope.Proceso.CantidadFaltante=faltante[0].cantidad;                  
+	        }
+	    	CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1 and e_rowid='"+$scope.pedidoSeleccionado.rowidpedido+"'",function(enviado){
+	    		$scope.Proceso.CantidadEnviada=enviado[0].cantidad;
+	    		$scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
+	    		if ($scope.pedidoSeleccionado.sincronizado=='true') 
+	    		{
+	    			$scope.Proceso.CantidadEnviada=100;
+	    			$scope.Proceso.Total=100;
+	    			$scope.Proceso.CantidadFaltante=0;
+	    		}
+	    		$scope.CalculoPorcentaje();
+	    	})
+	    })
+    }
+    function ActualizarProcesoJ()
+	{
+		console.log('actualizo proceso pedido');
+    	CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0 and e_rowid='"+$scope.pedidoSeleccionado.rowidpedido+"'",function(faltante){
+	        if (faltante.length==0) 
+	        {
+	            $scope.Proceso.CantidadFaltante=0;
+	        }
+	        else
+	        {
+	            $scope.Proceso.CantidadFaltante=faltante[0].cantidad;                  
+	        }
+	    	CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1 and e_rowid='"+$scope.pedidoSeleccionado.rowidpedido+"'",function(enviado){
+	    		$scope.Proceso.CantidadEnviada=enviado[0].cantidad;
+	    		$scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
+	    		if ($scope.pedidoSeleccionado.sincronizado=='true') 
+	    		{
+	    			$scope.Proceso.CantidadEnviada=100;
+	    			$scope.Proceso.Total=100;
+	    			$scope.Proceso.CantidadFaltante=0;
+	    		}
+	    		$scope.CalculoPorcentaje();
+	    	})
+	    })
+	}
+    var repeticion;
 	$scope.ConsultarDatos=function(pedido){
+		$scope.modalPedidoOpen=true;
 		$scope.detallespedido=[];
 		$scope.pedidoSeleccionado=pedido;
-		
 		$scope.contadores=[];
 		$scope.tallasAgregar=[];
 		$scope.contadores.cont1=0;
@@ -169,13 +306,71 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 		$scope.tabla1='';
 		$scope.tabla2='';
 		$scope.origen='';
+		$scope.ResultadoTest=[];
+		$scope.ResultadoTest.Mensaje="Procesando...";
 		if (pedido.tablamobile==1) {
 			$scope.tabla1='t_pedidos';
 			$scope.tabla2='t_pedidos_detalle';
 			$scope.origen='MOBILE';
+			$scope.MostrarProceso=true;
+			var fecha_inicio=new Date();
+			fecha_inicio=fecha_inicio.getTime(); 
+			$.ajax({
+				url:"http://reymonpruebas.pedidosonline.co/mobile/VerificacionConexion",
+				timeout:15000,
+				success:function()
+				{
+					$scope.MostrarProceso=true;
+					var Fecha_Fin=new Date();
+					Fecha_Fin=Fecha_Fin.getTime(); 
+					var tiempo=Fecha_Fin-fecha_inicio; 
+					if (tiempo<4000) {
+						$scope.ResultadoTest.Mensaje="Su conexion es Alta";
+					}
+					else if (tiempo>=4000 && tiempo <=8000) 
+					{
+						$scope.ResultadoTest.Mensaje="Su conexion es Media";
+					}
+					else
+					{
+						$scope.ResultadoTest.Mensaje="Su conexion es Baja, la sincronizacion puede tardar. Se recomienda conectarse a una red mas estable";		
+					}
+					$scope.OcultarBtnTest=false;
+				},
+				error:function()
+				{
+					$scope.MostrarProceso=true;
+					$scope.ResultadoTest.Mensaje="No fue posible realizar el test, por favor revise su conexion a internet."
+					$scope.OcultarBtnTest=false;
+				}
+			})
+			CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0 and e_rowid='"+pedido.rowidpedido+"'",function(faltante){
+	            if (faltante.length==0) 
+	            {
+	                $scope.Proceso.CantidadFaltante=0;
+	            }
+	            else
+	            {
+	                $scope.Proceso.CantidadFaltante=faltante[0].cantidad;                  
+	            }
+            	CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1 and e_rowid='"+pedido.rowidpedido+"'",function(enviado){
+            		$scope.Proceso.CantidadEnviada=enviado[0].cantidad;
+            		$scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
+            		if ($scope.pedidoSeleccionado.sincronizado=='true') 
+            		{
+            			$scope.Proceso.CantidadEnviada=100;
+            			$scope.Proceso.Total=100;
+            			$scope.Proceso.CantidadFaltante=0;
+            		}
+            		$scope.CalculoPorcentaje();
+            	})
+            })
+            debugger
+            repeticion = $interval(ActualizarProcesoJ, 1000);//window.setInterval(ActualizarProcesoJ(),1000);
 		}
 		else
 		{
+			$scope.MostrarProceso=false;
 			$scope.tabla1='t_pedidos_web';
 			$scope.tabla2='t_pedidos_detalle_web';	
 			$scope.origen='WEB';
@@ -231,7 +426,6 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 					}
 				})*/
 				CRUD.select(query3,function(tallas){
-					debugger
 					$scope.contadores.cont4++;
 					$scope.indicePush=true;
 					$scope.indicemenor=true;
@@ -271,7 +465,15 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 				})
 			})
 		})
-			
+		
+	}
+	//http://localhost:8089/31052017ReYMoN/#/ventas/pedidos_ingresados
+	
+	$scope.FinalizarIntervalo=function()
+	{
+		$interval.cancel(repeticion);
+		//window.clearInterval(repeticion);
+		console.log('finalizo intervalo');
 	}
 	$scope.Refrescar =function(){
 		CRUD.selectAll('t_pedidos',function(elem) {$scope.pedidos.push(elem)});
@@ -472,7 +674,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 				CRUD.Updatedynamic("update t_pedidos set estado_sincronizacion=1,sincronizado='plano' where rowid="+rowidPedido+"");
 				window.setTimeout(function(){
 					ProcesadoHiden();
-					//$route.reload();
+					$route.reload();
 					Mensajes('Listo Para Enviar','success','');
 					$scope.pedidos=[];
 					$scope.cargarLista();
@@ -480,15 +682,14 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 					localStorage.setItem('TIPO_SINCRONIZACION',$scope.sincronizacion); 
 					$(".confirmarEnvio").removeAttr("disabled");
 					$('#modalClose').click();
-				},25000)
+				},11000)
 			})
-
-		
 	}
 	$scope.ItemModal=[];
 	$scope.ColoresModal=[];
 	$scope.ModalColoreOpen=false;
 	$scope.ModalItem=function(item){
+		$scope.modalColorOpen=true;
 		if (item.origen=="WEB") {
 			$scope.ColoresModal=[];
 			$scope.ModalColoreOpen=true;
@@ -509,6 +710,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 					$scope.ItemModal.tallas[i]=[];			
 				}
 			}
+			$scope.MostrasProceso=false;
 		}
 		else
 		{
@@ -532,10 +734,11 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 					$scope.ItemModal.tallas[i].cantidad=0;		
 				}
 			}
+
 		}
 		
 	}
-	$scope.$on('$routeChangeStart', function(event,next, current) { 
+	/*$scope.$on('$routeChangeStart', function(event,next, current) { 
 		if ($scope.ModalColoreOpen==true) {
 			$scope.ModalColoreOpen=false;
 			event.preventDefault();
@@ -544,5 +747,5 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route',functio
 		}
 		
 		  
-	 });
+	 });*/
 }]);
