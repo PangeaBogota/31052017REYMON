@@ -261,10 +261,18 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             processData: false,
             data: formdata,
             success: function (data) {
-                CRUD.Updatedynamic("update s_planos_pedidos set estado=1");
-                Mensajes('Pedidos Sincronizados','success','');
-                $scope.SincronizacionProceso=false;
-                $scope.procesoSincronizacion=false;
+                var id=" (";
+                for (var i = 0; i < $scope.RegistroEnviar.length; i++) {
+                    id+= $scope.RegistroEnviar[i].rowid+",";
+                }
+                id = id.substring(0,id.length-1);
+                id+=")";
+                CRUD.Updatedynamic("update s_planos_pedidos set estado=1 where rowid in "+id);
+                setTimeout(function() {
+                    Mensajes('Pedidos Sincronizados','success','');
+                    $scope.SincronizacionProceso=false;
+                    $scope.procesoSincronizacion=false;    
+                }, 1000);
             },
             error: function (request) {
                 $scope.SincronizacionProceso=false;
