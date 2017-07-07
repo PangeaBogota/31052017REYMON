@@ -226,6 +226,9 @@
         
         // Genera Los Mensajes de Alertas
         function Mensajes(text, type, layot) {
+            debugger
+            $.noty.clearQueue(); // Clears the notification queue
+            $.noty.closeAll();
             if (layot == '' || layot == null)
                 layot = 'bottomRight';
 
@@ -233,9 +236,13 @@
             noty({
                 text: text,
                 type: type,
+                dismissQueue: true,
+                progressBar: true,
                 theme: 'defaultTheme',
                 layout: 'topRight',
                 timeout: 10000,
+                closeWith: ['click'],
+                maxVisible: 10,
                 modal: self.data('modal')
             });
             return false;
@@ -326,28 +333,15 @@
             <div id="Navegador">
                 <div  class="col-md-3 left_col">
                 <div class="left_col scroll-view">
-
                     <div class="navbar nav_title" style="border: 0;">
                         <a href="index.html#/" class="site_title itemNav"><i class="fa fa-dashboard"></i> <span>Pedidos Online</span></a>
                     </div>
                     <div class="clearfix"></div>
-
-
-                    <!-- menu prile quick info -->
-                    
-                    <!-- /menu prile quick info -->
-
                     <br />
-
-                    <!-- sidebar menu -->
-                    
                     <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-
                         <div class="menu_section">
-                            
                             <ul class="nav side-menu right hide-on-med-and-down  ">
                                 <li class="itemNav"><a  href="index.html#/"><i class="fa fa-home "></i> Home <span class="fa fa-chevron-down"></span></a>
-                                    
                                 </li>
                                 <li ><a><i class="fa fa-shopping-cart"></i> Pedidos <span class="fa fa-chevron-down"></span></a>
                                     <ul class="nav child_menu" style="display: none">
@@ -355,26 +349,17 @@
                                         </li>
                                         <li class="itemNav"><a href="#/ventas/pedidos_ingresados" >Pedidos Ingresados</a>
                                         </li>
-                                       
                                     </ul>
                                 </li>
                                 <li class="itemNav"><a href="#/crm/calendario"><i class="fa fa-calendar"></i> Actividades <span class="fa fa-chevron-down"></span></a>
-                                    
                                 </li>
                                 <li class="itemNav"><a href="#/crm/terceros"><i class="fa fa-user"></i> Clientes <span class="fa fa-chevron-down"></span></a>
-                                    
                                 </li>
                                 <li class="itemNav"><a href="#/configuracion/sincronizacion"><i class="fa fa-cogs"></i> Configuracion <span class="fa fa-chevron-down"></span></a>
-                                    
                                 </li>
-                                
                             </ul>
                         </div>
                     </div>
-
-                    <!-- /sidebar menu -->
-
-                    <!-- /menu footer buttons -->
                     <div class="sidebar-footer hidden-small">
                         <a data-toggle="tooltip" data-placement="top" title="Settings">
                             <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
@@ -389,12 +374,9 @@
                             <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
                         </a>
                     </div>
-                    <!-- /menu footer buttons -->
                 </div>
             </div>
             </div>
-			
-            <!-- top navigation -->
 			<div class="top_nav" >
                 <div ng-controller="sessionController">
                     <div id="modalConfirmacion" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" >
@@ -500,19 +482,13 @@
                                                                 data-round-progress-inner-circle-color="#505769"
                                                                 data-round-progress-label-color="#505769"></div>
                                 </li>
-                                
-                            </ul>
-
-                            
+                            </ul>      
                         </nav>
                     </div>
                 </div>
-	                
-
             </div>
             <!-- /top navigation -->
             <!-- page content -->
-
             <div class="right_col" role="main">
                 <div ng-controller="menuController">
                     <br />
@@ -527,11 +503,9 @@
                              style="display: block;margin-left: auto; margin-right: auto; margin-top: 250px;">
                     </div>
                 </div>
-                
-
                 <!-- footer content -->
                 <div class="form-group row">
-                  <p class="form-label pull-right" style="padding-right:20px">Powered By PedidosOnline. Version 2.3.1  </p>  
+                  <p class="form-label pull-right" style="padding-right:20px">Powered By PedidosOnline. Version 2.3.2  </p>  
                 </div>
                 </br>
                 </br>
@@ -545,7 +519,6 @@
                 </br>
                 </br>
                 </br>
-                
                 <!-- /footer content -->
             </div>
             <!-- /page content -->

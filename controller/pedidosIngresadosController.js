@@ -73,6 +73,12 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route','$inter
 	}
 	$scope.PedidoConfirmado=function()
 	{
+		var nueva_sinc=window.localStorage.getItem("NUEVA_SINCRONIZACION");
+        if (nueva_sinc==1) 
+        {
+            Mensajes('Por favor Esperar que la sincronizacion termine','information','');
+			return;
+        }
 		if ($scope.FechaEntrega=='' || $scope.FechaEntrega==undefined) 
 		{
 			Mensajes('Por favor seleccionar fecha de entrega','error','');
