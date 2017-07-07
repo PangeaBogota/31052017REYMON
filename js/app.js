@@ -158,6 +158,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             $scope.EnvioAutomatico();
         }
     }, 5000);
+    $scope.procesoSincronizacion=false;
     $scope.RegistroEnviar=[];
     $scope.SincronizacionProceso=false;
     $scope.EnvioAutomatico=function()
@@ -167,32 +168,12 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
         if ($scope.SincronizacionProceso==true) 
             return;
         CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=0",function(faltante){
-            if (faltante.length==0) 
-            {
-                $scope.Proceso.CantidadFaltante=0;
-            }
-            else
-            {
-                $scope.Proceso.CantidadFaltante=faltante[0].cantidad;                  
-            }
             CRUD.selectAllinOne("select count(rowid) as cantidad from s_planos_pedidos where estado=1",function(enviado){
-                $scope.Proceso.CantidadEnviada=enviado[0].cantidad;
-                $scope.Proceso.Total=$scope.Proceso.CantidadFaltante + $scope.Proceso.CantidadEnviada;
                 CRUD.selectAllinOne("select*from s_planos_pedidos where estado=0 order by ultimo_registro asc",function(elem){
                     if (elem.length==0) {
                         $scope.SincronizacionProceso=false;
                         CRUD.Updatedynamic("update t_pedidos set sincronizado='true' where sincronizado='plano'");
                         CRUD.Updatedynamic("delete from s_planos_pedidos where  estado=1 ");
-                        $scope.Proceso=[];
-                        $scope.Proceso.Porcentaje=0;
-                        $scope.Proceso.CantidadFaltante=0;
-                        $scope.Proceso.CantidadEnviada=0;
-                        $scope.Proceso.Total=0;
-                        $('#progreso').hide();
-                        $scope.roundProgressData = {
-                          label: 0,
-                          percentage: 0
-                        }
                         var URLactual = window.location;
                         var nueva_sinc=window.localStorage.getItem("NUEVA_SINCRONIZACION");
 
@@ -213,10 +194,10 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
                         localStorage.removeItem('NUEVA_SINCRONIZACION');
                         localStorage.setItem('NUEVA_SINCRONIZACION',1);
                     }
+                    $scope.procesoSincronizacion=true;
                     $scope.RegistroEnviar=elem;
-                    $scope.rotacionOff();
-                    $scope.rotacionOn();
-                    $scope.EnvioRegistroWeb(0);
+                    $scope.EnvioformData();
+                    //$scope.EnvioRegistroWeb(0);
                 })
             })
         })
@@ -263,6 +244,34 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
             $scope.CalculoPorcentaje();
         }
         
+    }
+    $scope.EnvioformData=function()
+    {
+        $scope.usuario=$scope.sessiondate.nombre_usuario;
+        $scope.codigoempresa=$scope.sessiondate.codigo_empresa;
+        var datos=JSON.stringify($scope.RegistroEnviar);
+        var formdata = new FormData();
+        formdata.append("datos",datos)
+        formdata.append("usuario", $scope.usuario)
+        formdata.append("codigo_empresa",$scope.codigoempresa)
+        $.ajax({
+            type: "POST",
+            url: "http://reymonpruebas.pedidosonline.co/mobile/syncv3",
+            contentType: false,
+            processData: false,
+            data: formdata,
+            success: function (data) {
+                CRUD.Updatedynamic("update s_planos_pedidos set estado=1");
+                Mensajes('Pedidos Sincronizados','success','');
+                $scope.SincronizacionProceso=false;
+                $scope.procesoSincronizacion=false;
+            },
+            error: function (request) {
+                $scope.SincronizacionProceso=false;
+                $scope.procesoSincronizacion=false;
+                Mensajes('Por favor revisar conexion','error','');
+            }
+        });
     }
     $scope.envioDataWeb=function(tipo){
         $scope.usuario=$scope.sessiondate.nombre_usuario;
