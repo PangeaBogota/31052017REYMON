@@ -256,7 +256,7 @@ app_angular.controller('sessionController',['bootbox','Conexion','$scope','$loca
         formdata.append("codigo_empresa",$scope.codigoempresa)
         $.ajax({
             type: "POST",
-            url: "http://reymonpruebas.pedidosonline.co/mobile/syncv3",
+            url: "http://reymon.pedidosonline.co/mobile/syncv3",
             contentType: false,
             processData: false,
             data: formdata,

@@ -168,7 +168,7 @@ app_angular.controller("PedidosController",['Conexion','$scope','$route','$inter
 		var fecha_inicio=new Date();
 		fecha_inicio=fecha_inicio.getTime(); 
 		$.ajax({
-			url:"http://reymonpruebas.pedidosonline.co/mobile/VerificacionConexion",
+			url:"http://reymon.pedidosonline.co/mobile/VerificacionConexion",
 			timeout:15000,
 			success:function()
 			{
